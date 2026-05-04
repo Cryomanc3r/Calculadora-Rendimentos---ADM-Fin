@@ -214,6 +214,17 @@ th {
     font-style: italic;
 }
 
+.grafico-container {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+    position: relative;
+    height: 400px; /* Altura fixa para o gráfico não ficar gigante */
+    width: 100%;
+}
+
 /* Ajuste para o Dark Mode */
 .dark-mode .resumo-descricao {
     color: #aaa;
