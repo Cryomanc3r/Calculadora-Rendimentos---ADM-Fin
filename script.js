@@ -1,11 +1,18 @@
 // 1. CAPTURA DE DADOS (Exigência do Trabalho 1)
 // Busca a meta Selic/CDI anualizada diretamente da API pública do Banco Central do Brasil.
+
+const delay = (ms) => new Promise(resolve  => setTimeout(resolve, ms));
+
 async function capturarTaxaBCB() {
+    const statusElement = document.getElementById('status-api');
+
     try {
         // Série 432: Taxa de juros - Meta Selic definida pelo Copom
         const response = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json');
         const data = await response.json();
         const taxa = parseFloat(data[0].valor);
+
+        await delay(1000);
         
         document.getElementById('taxa-cdi').value = taxa;
         document.getElementById('status-api').textContent = `(Capturado via API BCB: ${taxa}%)`;
@@ -23,6 +30,7 @@ window.onload = capturarTaxaBCB;
 // Formatação de moeda para o relatório
 const formatarMoeda = (valor) => {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
 };
 
 // 2. PROCESSAMENTO E VALOR DO DINHEIRO NO TEMPO
@@ -91,4 +99,18 @@ document.getElementById('calc-form').addEventListener('submit', function(e) {
         <p><strong>Juros Acumulados:</strong> ${formatarMoeda(totalRendimento)}</p>
         <p><strong>Valor Final Projetado:</strong> ${formatarMoeda(saldoAtual)}</p>
     `;
+});
+
+const btnDark = document.getElementById('toggle-dark');
+
+btnDark.addEventListener('click', () => {
+    // Alterna a classe dark-mode no body
+    document.body.classList.toggle('dark-mode');
+    
+    // Altera o ícone/texto do botão
+    if (document.body.classList.contains('dark-mode')) {
+        btnDark.textContent = "☀️ Modo Claro";
+    } else {
+        btnDark.textContent = "🌙 Modo Escuro";
+    }
 });

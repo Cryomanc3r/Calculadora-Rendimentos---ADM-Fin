@@ -8,38 +8,55 @@
 </head>
 <body>
     <main>
+        <button id="toggle-dark" style="width: auto; padding: 5px 15px; margin-bottom: 20px;"> 🌙 Modo Escuro</button>
         <h1>Simulador de Investimentos: CDI Dinâmico</h1>
-        <p><strong>Disciplina:</strong> Administração Financeira - CAD 167</p>
-        <p><strong>Tema:</strong> Valor do Dinheiro no Tempo</p>
+
+        <section class="intro-text">
+            <p>O <strong>CDI (Certificado de Depósito Interbancário)</strong> funciona como uma "régua" que define o rendimento de investimentos seguros, como o <i>saldo da sua conta digital</i> ou <i>títulos de renda fixa</i>. Na prática, quando o CDI sobe, seu dinheiro guardado rende mais; quando ele cai, o rendimento diminui.</p>
+            <p>Esta calculadora foi criada para você planejar sua vida financeira considerando não apenas o que você guarda, mas também o que precisa retirar mensalmente, demonstrando na prática o conceito de <strong>Valor do Dinheiro no Tempo</strong>.</p>
+        </section>
 
         <form id="calc-form">
             <div class="form-group">
-                <label for="taxa-cdi">Taxa CDI Anual (%) - <span id="status-api" class="loading" aria-live="polite">Buscando do Banco Central...</span></label>
+                <label for="taxa-cdi"> Taxa CDI Anual (%) - 
+                    <span id="status-api" class="loading" aria-live="polite">Buscando do Banco Central...</span>
+                    <span class="tooltip-icon" data-tooltip="Este valor é a taxa de juros atual do Brasil, buscada direto do Banco Central. Ela é o 'motor' que faz seu dinheiro render. Você pode mudar o valor para simular como seria se os juros subissem ou caíssem no futuro.">?</span>
+                </label>
                 <input type="number" id="taxa-cdi" step="0.01" required>
             </div>
             
             <div class="form-group">
-                <label for="percentual-cdi">Rentabilidade (% do CDI)</label>
+                <label for="percentual-cdi">Rentabilidade (% do CDI)
+                    <span class="tooltip-icon" data-tooltip="É o quanto do CDI o banco te paga. O padrão é 100%, mas alguns bancos oferecem mais para atrair clientes. Quanto maior, mais rápido seu dinheiro cresce!"> ? </span>
+                </label>
                 <input type="number" id="percentual-cdi" value="100" step="1" required>
             </div>
 
             <div class="form-group">
-                <label for="valor-inicial">Valor Inicial (R$)</label>
-                <input type="number" id="valor-inicial" value="1000" step="0.01" required>
+                <label for="valor-inicial">Valor Inicial (R$)
+                    <span class="tooltip-icon" data-tooltip="Valor que o investidor tem para aplicar imediatamente."> ? </span>
+                </label>
+                <input type="number" id="valor-inicial" value="1000" step="0.10" required>
             </div>
 
             <div class="form-group">
-                <label for="aporte-mensal">Aporte Mensal (R$)</label>
+                <label for="aporte-mensal">Aporte Mensal (R$)
+                    <span class="tooltip-icon" data-tooltip="Valor que o investidor promete depositar na conta todos os meses para acelerar o crescimento do patrimônio."> ? </span>
+                </label>
                 <input type="number" id="aporte-mensal" value="200" step="0.01" required>
             </div>
 
             <div class="form-group">
-                <label for="saque-mensal">Saque Mensal (R$)</label>
+                <label for="saque-mensal">Saque Mensal (R$)
+                    <span class="tooltip-icon" data-tooltip="É o dinheiro que o investidor pretende retirar da conta todos os meses. Pode ser utilizado para simular se o dinheiro investido consegue pagar uma conta fixa, por exemplo. "> ? </span>
+                </label>
                 <input type="number" id="saque-mensal" value="0" step="0.01" required>
             </div>
 
             <div class="form-group">
-                <label for="meses">Prazo (Meses)</label>
+                <label for="meses">Prazo (Meses)
+                    <span class="tooltip-icon" data-tooltip="O número de meses que o dinheiro ficará investido."> ? </span>
+                </label>
                 <input type="number" id="meses" value="12" step="1" required>
             </div>
 
