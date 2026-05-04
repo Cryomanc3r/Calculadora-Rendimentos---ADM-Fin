@@ -56,9 +56,9 @@ document.getElementById('calc-form').addEventListener('submit', function(e) {
     let totalRendimento = 0;
     const fluxoLiquidoMensal = aporteMensal - saqueMensal;
 
-    // 3. GERAÇÃO DE RELATÓRIOS (Exigência do Trabalho 1)
+    // Limpa a tabela antes de começar a calcular
     const tbody = document.querySelector('#tabela-relatorio tbody');
-    tbody.innerHTML = ''; // Limpa resultados anteriores
+    tbody.innerHTML = ''; 
 
     // Loop de capitalização mensal (Valor do Dinheiro no Tempo)
     for (let mes = 1; mes <= meses; mes++) {
@@ -75,7 +75,11 @@ document.getElementById('calc-form').addEventListener('submit', function(e) {
         saldoAtual = saldoInicioMes + rendimentoMes + fluxoLiquidoMensal;
 
         // Evita saldos negativos irreais caso os saques superem o principal
-        if (saldoAtual < 0) saldoAtual = 0;
+        let faliu = false;
+        if (saldoAtual <= 0) {
+            saldoAtual = 0;
+            faliu = true;
+        }
 
         // Cria a linha da tabela para o relatório
         const tr = document.createElement('tr');
@@ -88,18 +92,59 @@ document.getElementById('calc-form').addEventListener('submit', function(e) {
         `;
         tbody.appendChild(tr);
 
-        if (saldoAtual === 0) break; // Interrompe se o dinheiro acabar
+        // Se o dinheiro acabou, adiciona a linha de aviso e para o loop
+        if (faliu) {
+            const trAviso = document.createElement('tr');
+            trAviso.innerHTML = `
+                <td colspan="5" style="text-align: center; color: #c0392b; font-weight: bold; background-color: rgba(231, 76, 60, 0.1); padding: 15px;">
+                    ⚠️ Alerta: O patrimônio não suportou os saques e foi totalmente consumido no mês ${mes}.
+                </td>
+            `;
+            tbody.appendChild(trAviso);
+            break; 
+        }
     }
 
-    // Exibe a seção de relatório e o resumo
-    document.getElementById('area-relatorio').style.display = 'block';
+    // 3. GERAÇÃO DE RELATÓRIOS (Agora na ordem certa, DEPOIS do loop)
+    const rentabilidadeTotal = (totalRendimento / totalInvestido) * 100;
+
     document.getElementById('resumo').innerHTML = `
-        <p><strong>Taxa Mensal Efetiva:</strong> ${(taxaMensal * 100).toFixed(4)}% ao mês</p>
-        <p><strong>Total Investido (Sem Juros):</strong> ${formatarMoeda(totalInvestido)}</p>
-        <p><strong>Juros Acumulados:</strong> ${formatarMoeda(totalRendimento)}</p>
-        <p><strong>Valor Final Projetado:</strong> ${formatarMoeda(saldoAtual)}</p>
-    `;
+        <div class="resumo-item">
+            <div class="resumo-linha-principal">
+                <span class="resumo-label">Patrimônio Final:</span>
+                <span class="resumo-valor">${formatarMoeda(saldoAtual)}</span>
+            </div>
+            <span class="resumo-descricao">É o valor total que você terá ao final do prazo.</span>
+        </div>
+        <div class="resumo-item">
+            <div class="resumo-linha-principal">
+                <span class="resumo-label">Lucro Bruto (Juros):</span>
+                <span class="resumo-valor positivo">+ ${formatarMoeda(totalRendimento)}</span>
+            </div>
+            <span class="resumo-descricao">O quanto o dinheiro trabalhou para você (rendimento puro).</span>
+        </div>
+        <div class="resumo-item">
+            <div class="resumo-linha-principal">
+                <span class="resumo-label">Total de Aportes:</span>
+                <span class="resumo-valor">${formatarMoeda(totalInvestido)}</span>
+            </div>
+            <span class="resumo-descricao">O total de dinheiro que saiu do seu bolso.</span>
+        </div>
+        <div class="resumo-item">
+            <div class="resumo-linha-principal">
+                <span class="resumo-label">Rentabilidade Real:</span>
+                <span class="resumo-valor">${rentabilidadeTotal.toFixed(2)}%</span>
+            </div>
+            <span class="resumo-descricao">O ganho percentual total sobre o valor investido.</span>
+        </div>
+        <p style="font-size: 0.85em; color: #888; margin-top: 20px;">
+            * Simulação calculada com uma taxa mensal efetiva de <strong>${(taxaMensal * 100).toFixed(4)}%</strong>.
+        </p>`;
+
+    // Exibe a seção de relatório
+    document.getElementById('area-relatorio').style.display = 'block';
 });
+
 
 const btnDark = document.getElementById('toggle-dark');
 
