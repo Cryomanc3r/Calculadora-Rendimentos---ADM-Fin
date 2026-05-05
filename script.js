@@ -1,232 +1,203 @@
-// Variável global para o gráfico
-let graficoInstancia = null;
+const formatarMoeda = (valor) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-// 1. CAPTURA DE DADOS (Exigência do Trabalho 1)
-// Busca a meta Selic/CDI anualizada diretamente da API pública do Banco Central do Brasil.
+let taxas = null;
 
-const delay = (ms) => new Promise(resolve  => setTimeout(resolve, ms));
+const statusEl = () => document.getElementById('status-api');
+const taxaEl = () => document.getElementById('taxa-anual');
+const detalheEl = () => document.getElementById('taxa-detalhe');
 
-async function capturarTaxaBCB() {
-    const statusElement = document.getElementById('status-api');
+// ─── INICIALIZAÇÃO ───────────────────────────────────────────────────────────
+
+async function inicializar() {
+    statusEl().textContent = 'Buscando taxas...';
+    statusEl().className = 'loading';
 
     try {
-        const response = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json');
-        const data = await response.json();
-        const taxa = parseFloat(data[0].valor);
+        const res = await fetch('/api/taxas');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        taxas = await res.json();
+        if (taxas.error) throw new Error(taxas.error);
 
-        await delay(1000);
-        
-        document.getElementById('taxa-cdi').value = taxa;
-        statusElement.textContent = `(Capturado via API BCB: ${taxa}%)`;
-        statusElement.style.color = 'green';
-    } catch (error) {
-        console.error("Erro ao capturar dados:", error);
-        statusElement.textContent = "(Erro ao buscar API. Insira manualmente)";
-        statusElement.style.color = 'red';
+        statusEl().textContent = 'Taxas captadas com sucesso';
+        statusEl().style.color = 'green';
+        statusEl().className = '';
+        atualizarExibicao();
+    } catch (err) {
+        console.error('Erro ao buscar taxas:', err);
+        statusEl().textContent = 'Erro ao buscar taxas. Edite manualmente.';
+        statusEl().style.color = 'red';
+        taxaEl().readOnly = false;
     }
 }
 
-// Executa a captura assim que a página carrega
-window.onload = capturarTaxaBCB;
+// ─── ATUALIZAÇÃO DA EXIBIÇÃO ─────────────────────────────────────────────────
 
-// Formatação de moeda para o relatório
-const formatarMoeda = (valor) => {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-};
+function atualizarExibicao() {
+    if (!taxas) return;
 
-// 2. PROCESSAMENTO E VALOR DO DINHEIRO NO TEMPO
-document.getElementById('calc-form').addEventListener('submit', function(e) {
-    e.preventDefault(); // Evita recarregar a página
+    const tipo = document.getElementById('tipo-investimento').value;
+    const grupoPct = document.getElementById('grupo-percentual-cdi');
+    grupoPct.style.display = tipo === 'cdi' ? 'block' : 'none';
 
-        // Coleta os dados dos inputs
-    const taxaCdiAnual = parseFloat(document.getElementById('taxa-cdi').value) / 100;
-    const percentualCdi = parseFloat(document.getElementById('percentual-cdi').value) / 100;
+    const d = taxas[tipo];
+    if (!d) return;
+
+    taxaEl().value = d.taxa;
+
+    let detalhe = `${d.nome}: ${d.taxa}% a.a.`;
+    if (tipo === 'ipca') {
+        detalhe = `${d.nome}: IPCA 12m ${d.ipca12}% + ${d.taxaReal}% real = ${d.taxa}% nominal a.a.`;
+    }
+    detalhe += ` — Fonte: ${d.fonte}`;
+    detalheEl().textContent = detalhe;
+}
+
+// ─── EVENTOS ─────────────────────────────────────────────────────────────────
+
+document.getElementById('tipo-investimento').addEventListener('change', atualizarExibicao);
+window.onload = inicializar;
+
+// ─── CÁLCULO E GERAÇÃO DO RELATÓRIO ─────────────────────────────────────────
+
+document.getElementById('calc-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const tipo = document.getElementById('tipo-investimento').value;
+    const taxaAnualBruta = parseFloat(taxaEl().value) / 100;
+
+    let taxaAnualEfetiva;
+    if (tipo === 'cdi') {
+        const percentualCdi = parseFloat(document.getElementById('percentual-cdi').value) / 100;
+        taxaAnualEfetiva = taxaAnualBruta * percentualCdi;
+    } else {
+        taxaAnualEfetiva = taxaAnualBruta;
+    }
+
     const valorInicial = parseFloat(document.getElementById('valor-inicial').value);
     const aporteMensal = parseFloat(document.getElementById('aporte-mensal').value);
     const saqueMensal = parseFloat(document.getElementById('saque-mensal').value);
     const meses = parseInt(document.getElementById('meses').value);
 
-       // Calcula a taxa anual efetiva do investimento
-    const taxaAnualEfetiva = taxaCdiAnual * percentualCdi;
-    
-    // Converte a taxa anual para mensal usando juros compostos
     const taxaMensal = Math.pow(1 + taxaAnualEfetiva, 1 / 12) - 1;
 
     let saldoAtual = valorInicial;
-    let saldoParado = valorInicial; 
     let totalInvestido = valorInicial;
     let totalRendimento = 0;
     const fluxoLiquidoMensal = aporteMensal - saqueMensal;
 
-    const labelsMeses = [0];
-    const dadosReal = [valorInicial];
-    const dadosParado = [valorInicial];
+    const dadosMeses = { labels: [], investido: [], saldo: [] };
 
     const tbody = document.querySelector('#tabela-relatorio tbody');
-    tbody.innerHTML = ''; 
+    tbody.innerHTML = '';
 
-    // Loop de capitalização mensal (Valor do Dinheiro no Tempo)
     for (let mes = 1; mes <= meses; mes++) {
-        let saldoInicioMes = saldoAtual;
-        
-     // O rendimento incide sobre o saldo que iniciou o mês
-        let rendimentoMes = saldoInicioMes * taxaMensal;
-       
-        // Atualiza os totais
+        const saldoInicioMes = saldoAtual;
+        const rendimentoMes = saldoInicioMes * taxaMensal;
+
         totalRendimento += rendimentoMes;
         totalInvestido += aporteMensal;
-        
-          // Saldo final do mês considera o juro acumulado e o fluxo de caixa
         saldoAtual = saldoInicioMes + rendimentoMes + fluxoLiquidoMensal;
+        if (saldoAtual < 0) saldoAtual = 0;
 
-        // Cálculo Parado
-        let rendimentoParado = saldoParado * taxaMensal;
-        saldoParado = saldoParado + rendimentoParado; 
+        dadosMeses.labels.push(`Mês ${mes}`);
+        dadosMeses.investido.push(parseFloat(totalInvestido.toFixed(2)));
+        dadosMeses.saldo.push(parseFloat(saldoAtual.toFixed(2)));
 
-        // Evita saldos negativos irreais caso os saques superem o principal
-        let faliu = false;
-        if (saldoAtual <= 0) {
-            saldoAtual = 0;
-            faliu = true;
-        }
-
-        labelsMeses.push(mes);
-        dadosReal.push(saldoAtual);
-        dadosParado.push(saldoParado);
-
-         // Cria a linha da tabela para o relatório
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td style="text-align: center;">${mes}</td>
+            <td style="text-align:center;">${mes}</td>
             <td>${formatarMoeda(saldoInicioMes)}</td>
-            <td style="color: green;">+ ${formatarMoeda(rendimentoMes)}</td>
+            <td style="color:green;">+ ${formatarMoeda(rendimentoMes)}</td>
             <td>${formatarMoeda(fluxoLiquidoMensal)}</td>
-            <td style="font-weight: bold;">${formatarMoeda(saldoAtual)}</td>
+            <td style="font-weight:bold;">${formatarMoeda(saldoAtual)}</td>
         `;
         tbody.appendChild(tr);
-
-        // Se o dinheiro acabou, adiciona a linha de aviso e para o loop
-        if (faliu) {
-            const trAviso = document.createElement('tr');
-            trAviso.innerHTML = `
-                <td colspan="5" style="text-align: center; color: #c0392b; font-weight: bold; background-color: rgba(231, 76, 60, 0.1); padding: 15px;">
-                    ⚠️ Alerta: O patrimônio não suportou os saques e foi totalmente consumido no mês ${mes}.
-                </td>
-            `;
-            tbody.appendChild(trAviso);
-            break; 
-        }
+        if (saldoAtual === 0) break;
     }
 
-    // 3. GERAÇÃO DE RELATÓRIOS E RESUMO
-    const rentabilidadeTotal = (totalRendimento / totalInvestido) * 100;
-
-    document.getElementById('resumo').innerHTML = `
-        <div class="resumo-item">
-            <div class="resumo-linha-principal">
-                <span class="resumo-label">Patrimônio Final:</span>
-                <span class="resumo-valor">${formatarMoeda(saldoAtual)}</span>
-            </div>
-            <span class="resumo-descricao">É o valor total que você terá ao final do prazo.</span>
-        </div>
-        <div class="resumo-item">
-            <div class="resumo-linha-principal">
-                <span class="resumo-label">Lucro Bruto (Juros):</span>
-                <span class="resumo-valor positivo">+ ${formatarMoeda(totalRendimento)}</span>
-            </div>
-            <span class="resumo-descricao">O quanto o dinheiro trabalhou para você (rendimento puro).</span>
-        </div>
-        <div class="resumo-item">
-            <div class="resumo-linha-principal">
-                <span class="resumo-label">Total de Aportes:</span>
-                <span class="resumo-valor">${formatarMoeda(totalInvestido)}</span>
-            </div>
-            <span class="resumo-descricao">O total de dinheiro que saiu do seu bolso.</span>
-        </div>
-        <div class="resumo-item">
-            <div class="resumo-linha-principal">
-                <span class="resumo-label">Rentabilidade Real:</span>
-                <span class="resumo-valor">${rentabilidadeTotal.toFixed(2)}%</span>
-            </div>
-            <span class="resumo-descricao">O ganho percentual total sobre o valor investido.</span>
-        </div>
-        <p style="font-size: 0.85em; color: #888; margin-top: 20px;">
-            * Simulação calculada com uma taxa mensal efetiva de <strong>${(taxaMensal * 100).toFixed(4)}%</strong>.
-        </p>`;
+    const tipoLabel = document.getElementById('tipo-investimento').selectedOptions[0].text;
 
     document.getElementById('area-relatorio').style.display = 'block';
+    document.getElementById('resumo').innerHTML = `
+        <p><strong>Tipo de Investimento:</strong> ${tipoLabel}</p>
+        <p><strong>Taxa Anual Efetiva:</strong> ${(taxaAnualEfetiva * 100).toFixed(4)}% a.a.</p>
+        <p><strong>Taxa Mensal Efetiva:</strong> ${(taxaMensal * 100).toFixed(4)}% a.m.</p>
+        <p><strong>Total Investido (Sem Juros):</strong> ${formatarMoeda(totalInvestido)}</p>
+        <p><strong>Juros Acumulados:</strong> ${formatarMoeda(totalRendimento)}</p>
+        <p><strong>Valor Final Projetado:</strong> ${formatarMoeda(saldoAtual)}</p>
+    `;
 
-    // 4. DESENHANDO O GRÁFICO (Chart.js)
-    const ctx = document.getElementById('graficoEvolucao').getContext('2d');
+    renderizarGrafico(dadosMeses);
+});
 
-    if (graficoInstancia) {
-        graficoInstancia.destroy();
+// ─── GRÁFICO ──────────────────────────────────────────────────────────────────
+
+let graficoInstance = null;
+
+function renderizarGrafico(dados) {
+    const ctx = document.getElementById('grafico-resultado').getContext('2d');
+
+    if (graficoInstance) {
+        graficoInstance.destroy();
     }
 
-    graficoInstancia = new Chart(ctx, {
-        type: 'line',
+    const moeda = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    graficoInstance = new Chart(ctx, {
+        type: 'bar',
         data: {
-            labels: labelsMeses,
+            labels: dados.labels,
             datasets: [
                 {
-                    label: 'Progressão Real (Com Aportes/Saques)',
-                    data: dadosReal,
-                    borderColor: '#27ae60',
-                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.1
+                    label: 'Total Investido',
+                    data: dados.investido,
+                    backgroundColor: '#1a3a5c',
+                    borderColor: '#122a44',
+                    borderWidth: 1,
+                    borderRadius: 4
                 },
                 {
-                    label: 'Progressão Parada (Sem movimentações)',
-                    data: dadosParado,
-                    borderColor: '#f39c12',
-                    borderWidth: 2,
-                    borderDash: [5, 5],
-                    fill: false,
-                    tension: 0.1
+                    label: 'Saldo Final',
+                    data: dados.saldo,
+                    backgroundColor: '#5ba4cf',
+                    borderColor: '#3a87c0',
+                    borderWidth: 1,
+                    borderRadius: 4
                 }
             ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
             plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { font: { size: 13 }, padding: 16 }
+                },
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
-                            return context.dataset.label + ': ' + formatarMoeda(context.parsed.y);
-                        }
+                        label: (ctx) => ` ${ctx.dataset.label}: ${moeda(ctx.raw)}`
                     }
                 }
             },
             scales: {
                 y: {
+                    beginAtZero: true,
                     ticks: {
-                        callback: function(value) {
-                            return 'R$ ' + value.toLocaleString('pt-BR');
-                        }
-                    }
+                        callback: (v) => moeda(v).replace(',00', '')
+                    },
+                    grid: { color: '#e8e8e8' }
                 },
                 x: {
-                    title: { display: true, text: 'Meses' }
+                    grid: { display: false },
+                    ticks: {
+                        maxRotation: 45,
+                        autoSkip: true,
+                        maxTicksLimit: 24
+                    }
                 }
             }
         }
     });
-}); // Fim do evento submit
-
-// MODO ESCURO
-const btnDark = document.getElementById('toggle-dark');
-
-btnDark.addEventListener('click', () => {
-    // Alterna a classe dark-mode no body
-    document.body.classList.toggle('dark-mode');
-    
-        // Altera o ícone/texto do botão
-    if (document.body.classList.contains('dark-mode')) {
-        btnDark.textContent = "☀️ Modo Claro";
-    } else {
-        btnDark.textContent = "🌙 Modo Escuro";
-    }
-});
+}
