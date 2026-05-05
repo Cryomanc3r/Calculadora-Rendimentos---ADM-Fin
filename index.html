@@ -3,41 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de CDI: Aportes e Saques</title>
+    <title>Simulador de Investimentos: Renda Fixa Dinâmica</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <main>
-        <button id="toggle-dark" style="width: auto; padding: 5px 15px; margin-bottom: 20px;"> 🌙 Modo Escuro</button>
-        <h1>Simulador de Investimentos: CDI Dinâmico</h1>
+        <header class="header-academico">
+            <h1>Simulador de Investimentos: Renda Fixa Dinâmica</h1>
+            <div class="info-projeto">
+                <p><strong>Disciplina:</strong> Administração Financeira</p>
+                <p><strong>Alunos:</strong> Isadora Cunha Pimentel | Pedro Dalla-Lana</p>
+            </div>
+        </header>
 
         <section class="intro-text">
-            <p>O <strong>CDI (Certificado de Depósito Interbancário)</strong> funciona como uma "régua" que define o rendimento de investimentos seguros, como o <i>saldo da sua conta digital</i> ou <i>títulos de renda fixa</i>. Na prática, quando o CDI sobe, seu dinheiro guardado rende mais; quando ele cai, o rendimento diminui.</p>
-            <p>Esta calculadora foi criada para você planejar sua vida financeira considerando não apenas o que você guarda, mas também o que precisa retirar mensalmente, demonstrando na prática o conceito de <strong>Valor do Dinheiro no Tempo</strong>.</p>
+            <p>Esta ferramenta permite simular a evolução do seu patrimônio em diferentes modalidades de <strong>Renda Fixa</strong>, como CDI, Poupança e Tesouro Direto. O objetivo é demonstrar como os juros compostos e a frequência de aportes ou saques impactam o Valor do Dinheiro no Tempo, permitindo um planejamento financeiro mais preciso e realista.</p>
         </section>
 
         <form id="calc-form">
             <div class="form-group">
-                <label for="taxa-cdi"> Taxa CDI Anual (%) - 
-                    <span id="status-api" class="loading" aria-live="polite">Buscando do Banco Central...</span>
-                    <span class="tooltip-icon" data-tooltip="Este valor é a taxa de juros atual do Brasil, buscada direto do Banco Central. Ela é o 'motor' que faz seu dinheiro render. Você pode mudar o valor para simular como seria se os juros subissem ou caíssem no futuro.">?</span>
-                </label>
-                <input type="number" id="taxa-cdi" step="0.01" required>
+                <label for="tipo-investimento">Tipo de Investimento</label>
+                <select id="tipo-investimento">
+                    <option value="cdi">CDI (Meta Selic)</option>
+                    <option value="poupanca">Poupança (Rendimento)</option>
+                    <option value="prefixado">Tesouro Direto Prefixado</option>
+                    <option value="ipca">Tesouro Direto IPCA+</option>
+                </select>
             </div>
-            
-            <div class="form-group">
+
+            <div class="form-group taxa-info-box">
+                <label>Taxa Anual Captada - <span id="status-api" class="loading" aria-live="polite">Buscando taxas...</span></label>
+                <input type="number" id="taxa-anual" step="0.01" required readonly class="taxa-display">
+                <p id="taxa-detalhe" class="taxa-detalhe"></p>
+            </div>
+
+            <div class="form-group" id="grupo-percentual-cdi">
                 <label for="percentual-cdi">Rentabilidade (% do CDI)
-                    <span class="tooltip-icon" data-tooltip="É o quanto do CDI o banco te paga. O padrão é 100%, mas alguns bancos oferecem mais para atrair clientes. Quanto maior, mais rápido seu dinheiro cresce!"> ? </span>
+                  <span class="tooltip-icon" data-tooltip="É o quanto do CDI o banco te paga. O padrão é 100%, mas alguns bancos oferecem mais para atrair clientes. Quanto maior, mais rápido seu dinheiro cresce!"> ? </span>
                 </label>
                 <input type="number" id="percentual-cdi" value="100" step="1" required>
             </div>
 
             <div class="form-group">
                 <label for="valor-inicial">Valor Inicial (R$)
-                    <span class="tooltip-icon" data-tooltip="Valor que o investidor tem para aplicar imediatamente."> ? </span>
-                </label>
-                <input type="number" id="valor-inicial" value="1000" step="0.10" required>
+                     <span class="tooltip-icon" data-tooltip="Valor que o investidor tem para aplicar imediatamente."> ? </span>
+                </label>                     
+                <input type="number" id="valor-inicial" value="1000" step="0.01" required>
             </div>
 
             <div class="form-group">
@@ -66,13 +78,10 @@
 
         <section id="area-relatorio" aria-live="polite">
             <h2>Relatório do Investimento</h2>
-
             <div id="resumo" class="resumo-lista"></div>
-
             <div class="grafico-container">
-                <canvas id="graficoEvolucao"></canvas>
+                <canvas id="grafico-resultado"></canvas>
             </div>
-            
             <table id="tabela-relatorio">
                 <thead>
                     <tr>
@@ -84,11 +93,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    </tbody>
+                </tbody>
             </table>
         </section>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
