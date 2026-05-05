@@ -1,5 +1,6 @@
+/* 1. ESTILO BASE */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     line-height: 1.6;
     margin: 0;
     padding: 20px;
@@ -8,16 +9,46 @@ body {
 }
 
 main {
-    max-width: 800px;
+    max-width: 900px; 
     margin: auto;
     background: #fff;
     padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
 h1, h2 { 
     color: #2c3e50; 
+}
+
+.header-academico h1 {
+    margin-bottom: 10px;
+    font-size: 1.8em;
+}
+
+.info-projeto {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.info-projeto p {
+    margin: 2px 0; 
+    font-size: 0.85em; 
+    color: #7f8c8d;
+}
+
+.intro-text {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-left: 4px solid #3498db;
+    border-radius: 4px;
+    margin-bottom: 25px;
+    font-size: 0.95em;
+}
+
+.intro-text p {
+    margin: 0;
 }
 
 .form-group { 
@@ -30,98 +61,195 @@ label {
     margin-bottom: 5px; 
 }
 
-input { 
+input, select { 
     width: 100%; 
     padding: 10px; 
     border: 1px solid #ccc; 
-    border-radius: 4px; 
+    border-radius: 6px; 
     box-sizing: border-box; 
+    font-size: 14px;
 }
 
 button {
     display: block;
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     background-color: #3498db;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
     margin-top: 20px;
+    transition: background 0.3s;
 }
 
 button:hover { 
     background-color: #2980b9; 
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-th, td {
-    padding: 12px;
-    border: 1px solid #ddd;
-    text-align: right;
-}
-
-th { 
-    background-color: #2c3e50; 
-    color: white; 
-    text-align: center; 
-}
-
-.loading { 
-    color: #e67e22; 
-    font-weight: bold; 
-}
-
-select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 14px;
-    background-color: #fff;
-    cursor: pointer;
-}
-
+/* 2. CAMPOS DE TAXA */
 .taxa-display {
     background-color: #f0f8ff;
     color: #2c3e50;
     font-weight: bold;
-    cursor: default;
 }
 
 .taxa-info-box {
     background-color: #f9f9f9;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
-    padding: 12px 15px;
+    padding: 15px;
 }
 
 .taxa-detalhe {
-    margin: 6px 0 0;
+    margin: 8px 0 0;
     font-size: 12px;
     color: #666;
-    font-weight: normal;
 }
 
-.grafico-container {
-    margin: 24px 0;
+/* 3. RELATÓRIO E RESUMO */
+.resumo-lista {
+    margin: 25px 0;
     padding: 20px;
-    background: #f9f9f9;
-    border: 1px solid #e0e0e0;
+    background-color: #fff;
+    border: 1px solid #eee;
     border-radius: 8px;
-    width: 100%;
-    overflow-x: auto;
 }
 
-/* Oculta a área de relatório até que seja gerada */
+.resumo-item {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dotted #ddd;
+    display: flex;
+    flex-direction: column;
+}
+
+.resumo-item:last-child {
+    border-bottom: none;
+}
+
+.resumo-linha-principal {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 1.05em;
+}
+
+.resumo-descricao {
+    color: #888;
+    font-size: 0.9em;
+    font-style: italic;
+}
+
+/* 4. GRÁFICO E TABELA */
+.grafico-container {
+    margin: 30px 0;
+    padding: 15px;
+    background: #fdfdfd;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    height: 400px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 0.95em;
+}
+
+th, td {
+    padding: 10px 8px;
+    border: 1px solid #eee;
+    text-align: right;
+    word-wrap: break-word;
+}
+
+th:nth-child(1) { width: 10%; text-align: center; } /* Mês */
+th:nth-child(2) { width: 23%; } /* Saldo Inicial */
+th:nth-child(3) { width: 22%; } /* Rendimento */
+th:nth-child(4) { width: 22%; } /* Aporte/Saque Líquido */
+th:nth-child(5) { width: 23%; } /* Saldo Final */
+
+th { 
+    background-color: #2c3e50; 
+    color: white; 
+    text-align: center; 
+    vertical-align: middle;
+    line-height: 1.2;
+}
+
+label {
+    display: flex;
+    align-items: center;
+    gap: 8px; 
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+/* Estilo da bolinha de informação */
+.tooltip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    background-color: #3498db;
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    position: relative; 
+}
+
+/* O "Balão" de texto que aparece no hover */
+.tooltip-icon::after {
+    content: attr(data-tooltip); 
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #2c3e50;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: normal; 
+    width: 200px;
+    text-align: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 10;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Mostra o balão ao passar o mouse */
+.tooltip-icon:hover::after {
+    visibility: visible;
+    opacity: 1;
+}
+
 #area-relatorio { 
     display: none; 
-    margin-top: 30px; 
+    margin-top: 40px; 
+}
+
+#status-api {
+    font-size: 0.95em; 
+    font-weight: normal;
+    margin-left: 5px;
+    transition: all 0.3s ease;
+}
+
+.loading { 
+    animation: blink 1s infinite;
+    color: #f39c12;
+    font-style: italic;
+}
+
+@keyframes blink { 
+    50% { opacity: 0.5; } 
 }

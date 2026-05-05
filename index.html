@@ -3,14 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Investimentos: CDI Dinâmico</title>
+    <title>Simulador de Investimentos: Renda Fixa Dinâmica</title>
     <link rel="stylesheet" href="style.css">
+     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <main>
-        <h1>Simulador de Investimentos: CDI Dinâmico</h1>
-        <p><strong>Disciplina:</strong> Administração Financeira - CAD 167</p>
-        <p><strong>Tema:</strong> Valor do Dinheiro no Tempo</p>
+        <header class="header-academico">
+            <h1>Simulador de Investimentos: Renda Fixa Dinâmica</h1>
+            <div class="info-projeto">
+                <p><strong>Disciplina:</strong> Administração Financeira</p>
+                <p><strong>Alunos:</strong> Isadora Cunha Pimentel | Pedro Dalla-Lana</p>
+            </div>
+        </header>
+
+        <section class="intro-text">
+            <p>Esta ferramenta permite simular a evolução do seu patrimônio em diferentes modalidades de <strong>Renda Fixa</strong>, como CDI, Poupança e Tesouro Direto. O objetivo é demonstrar como os juros compostos e a frequência de aportes ou saques impactam o Valor do Dinheiro no Tempo, permitindo um planejamento financeiro mais preciso e realista.</p>
+        </section>
 
         <form id="calc-form">
             <div class="form-group">
@@ -30,27 +39,37 @@
             </div>
 
             <div class="form-group" id="grupo-percentual-cdi">
-                <label for="percentual-cdi">Rentabilidade (% do CDI)</label>
+                <label for="percentual-cdi">Rentabilidade (% do CDI)
+                  <span class="tooltip-icon" data-tooltip="É o quanto do CDI o banco te paga. O padrão é 100%, mas alguns bancos oferecem mais para atrair clientes. Quanto maior, mais rápido seu dinheiro cresce!"> ? </span>
+                </label>
                 <input type="number" id="percentual-cdi" value="100" step="1" required>
             </div>
 
             <div class="form-group">
-                <label for="valor-inicial">Valor Inicial (R$)</label>
+                <label for="valor-inicial">Valor Inicial (R$)
+                     <span class="tooltip-icon" data-tooltip="Valor que o investidor tem para aplicar imediatamente."> ? </span>
+                </label>                     
                 <input type="number" id="valor-inicial" value="1000" step="0.01" required>
             </div>
 
             <div class="form-group">
-                <label for="aporte-mensal">Aporte Mensal (R$)</label>
+                <label for="aporte-mensal">Aporte Mensal (R$)
+                    <span class="tooltip-icon" data-tooltip="Valor que o investidor promete depositar na conta todos os meses para acelerar o crescimento do patrimônio."> ? </span>
+                </label>
                 <input type="number" id="aporte-mensal" value="200" step="0.01" required>
             </div>
 
             <div class="form-group">
-                <label for="saque-mensal">Saque Mensal (R$)</label>
+                <label for="saque-mensal">Saque Mensal (R$)
+                    <span class="tooltip-icon" data-tooltip="É o dinheiro que o investidor pretende retirar da conta todos os meses. Pode ser utilizado para simular se o dinheiro investido consegue pagar uma conta fixa, por exemplo. "> ? </span>
+                </label>
                 <input type="number" id="saque-mensal" value="0" step="0.01" required>
             </div>
 
             <div class="form-group">
-                <label for="meses">Prazo (Meses)</label>
+                <label for="meses">Prazo (Meses)
+                    <span class="tooltip-icon" data-tooltip="O número de meses que o dinheiro ficará investido."> ? </span>
+                </label>
                 <input type="number" id="meses" value="12" step="1" required>
             </div>
 
@@ -58,8 +77,8 @@
         </form>
 
         <section id="area-relatorio" aria-live="polite">
-            <h2>Relatório Decorrente da Execução</h2>
-            <div id="resumo"></div>
+            <h2>Relatório do Investimento</h2>
+            <div id="resumo" class="resumo-lista"></div>
             <div class="grafico-container">
                 <canvas id="grafico-resultado"></canvas>
             </div>
